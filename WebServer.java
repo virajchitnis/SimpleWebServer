@@ -112,7 +112,8 @@ class GarbageCollector extends TimerTask {
 		for (int i = 0; i < serverThreads.size(); i++) {
 			ServerClientThread currThread = serverThreads.get(i);
 			long timeSinceThreadStart = dateNow.getTime() - currThread.threadStartTime.getTime();
-			if (timeSinceThreadStart > 300) {
+			Boolean transferInProgress = currThread.dataTransferInProgress;
+			if ((timeSinceThreadStart > 300) && (!transferInProgress)) {
 				currThread.closeOpenConnections();
 				serverThreads.remove(currThread);
 			}
@@ -127,12 +128,14 @@ class ServerClientThread implements Runnable {
 	protected DataOutputStream outToClient;
 	public Date threadStartTime;
 	protected Boolean threadRunning;
+	public Boolean dataTransferInProgress;
 
     public ServerClientThread(Socket connectionSocket) {
         this.connectionSocket = connectionSocket;
 		this.serverName = "CHITNIS/1.0";
 		this.threadStartTime = new Date();
 		this.threadRunning = true;
+		dataTransferInProgress = false;
     }
 
     public void run() {
@@ -154,6 +157,7 @@ class ServerClientThread implements Runnable {
 						}
 					}
 					else {
+						dataTransferInProgress = true;
 						httpRequestHeaders.add(tempClientText);
 					}
 				}
@@ -164,6 +168,7 @@ class ServerClientThread implements Runnable {
 					((!clientGETRequest.endsWith("HTTP/1.1")) && (!clientGETRequest.endsWith("HTTP/1.0")))) {
 						keepConnectionOpen = returnBadRequest();
 						threadStartTime = new Date();
+						dataTransferInProgress = false;
 						continue;
 					}
 				
@@ -171,6 +176,7 @@ class ServerClientThread implements Runnable {
 					if (!clientHOSTRequest.startsWith("Host: ")) {
 						keepConnectionOpen = returnBadRequest();
 						threadStartTime = new Date();
+						dataTransferInProgress = false;
 						continue;
 					}
 					
@@ -198,16 +204,19 @@ class ServerClientThread implements Runnable {
 							+ responseBody + "\n";
 						keepConnectionOpen = writeBytesToClient(serverResponse);
 						threadStartTime = new Date();
+						dataTransferInProgress = false;
 					}
 					else {
 						keepConnectionOpen = returnNotFoundRequest();
 						threadStartTime = new Date();
+						dataTransferInProgress = false;
 						continue;
 					}
 				}
 				else {
 					keepConnectionOpen = returnBadRequest();
 					threadStartTime = new Date();
+					dataTransferInProgress = false;
 					continue;
 				}
 			}
