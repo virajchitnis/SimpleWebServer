@@ -7,6 +7,8 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.text.SimpleDateFormat;
 import java.awt.*;
 import java.awt.event.*;
@@ -37,14 +39,16 @@ class WebServer {
 		 */
 		try {
 			ServerSocket welcomeSocket = new ServerSocket(9999);
-			ArrayList<Thread> serverThreads = new ArrayList<Thread>();
+			ArrayList<ServerClientThread> serverThreads = new ArrayList<ServerClientThread>();
+			
+			Timer garbageCollectionTimer = new Timer();
+			garbageCollectionTimer.scheduleAtFixedRate(new GarbageCollector(serverThreads), 500, 500);
 			
 			while(true) {
 				Socket connectionSocket = welcomeSocket.accept();
-				Thread newThread = new Thread(new ServerClientThread(connectionSocket));
-				newThread.start();
-				serverThreads.add(newThread);
-				//System.out.println("Thread count: " + serverThreads.size());
+				ServerClientThread newRunnable = new ServerClientThread(connectionSocket);
+				new Thread(newRunnable).start();
+				serverThreads.add(newRunnable);
 			}
 		}
 		catch (IOException e) {
@@ -96,17 +100,39 @@ class WebServer {
 	}
 }
 
+class GarbageCollector extends TimerTask {
+	ArrayList<ServerClientThread> serverThreads;
+	
+	public GarbageCollector(ArrayList<ServerClientThread> serverThreads) {
+		this.serverThreads = serverThreads;
+	}
+	
+	public void run() {
+		Date dateNow = new Date();
+		for (int i = 0; i < serverThreads.size(); i++) {
+			ServerClientThread currThread = serverThreads.get(i);
+			long timeSinceThreadStart = dateNow.getTime() - currThread.threadStartTime.getTime();
+			if (timeSinceThreadStart > 300) {
+				currThread.closeOpenConnections();
+				serverThreads.remove(currThread);
+			}
+		}
+	}
+}
+
 class ServerClientThread implements Runnable {
 	protected Socket connectionSocket;
 	protected String serverName;
 	protected BufferedReader inFromClient;
 	protected DataOutputStream outToClient;
 	public Date threadStartTime;
+	protected Boolean threadRunning;
 
     public ServerClientThread(Socket connectionSocket) {
         this.connectionSocket = connectionSocket;
 		this.serverName = "CHITNIS/1.0";
 		this.threadStartTime = new Date();
+		this.threadRunning = true;
     }
 
     public void run() {
@@ -115,9 +141,9 @@ class ServerClientThread implements Runnable {
 			outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 		
 			Boolean keepConnectionOpen = true;
-			while (keepConnectionOpen) {
+			while (keepConnectionOpen && threadRunning) {
 				ArrayList<String> httpRequestHeaders = new ArrayList<String>();
-				while (true) {
+				while (keepConnectionOpen && threadRunning) {
 					String tempClientText = inFromClient.readLine();
 					if (tempClientText == null || tempClientText.length() == 0) {
 						if (httpRequestHeaders.size() == 0) {
@@ -137,12 +163,14 @@ class ServerClientThread implements Runnable {
 					if ((clientGETRequest.length() < 14) || (!clientGETRequest.startsWith("GET")) || 
 					((!clientGETRequest.endsWith("HTTP/1.1")) && (!clientGETRequest.endsWith("HTTP/1.0")))) {
 						keepConnectionOpen = returnBadRequest();
+						threadStartTime = new Date();
 						continue;
 					}
 				
 					String clientHOSTRequest = httpRequestHeaders.get(1);
 					if (!clientHOSTRequest.startsWith("Host: ")) {
 						keepConnectionOpen = returnBadRequest();
+						threadStartTime = new Date();
 						continue;
 					}
 					
@@ -169,14 +197,17 @@ class ServerClientThread implements Runnable {
 							+ "Content-Type: text/html; charset=UTF-8\r\n\r\n\r\n"
 							+ responseBody + "\n";
 						keepConnectionOpen = writeBytesToClient(serverResponse);
+						threadStartTime = new Date();
 					}
 					else {
 						keepConnectionOpen = returnNotFoundRequest();
+						threadStartTime = new Date();
 						continue;
 					}
 				}
 				else {
 					keepConnectionOpen = returnBadRequest();
+					threadStartTime = new Date();
 					continue;
 				}
 			}
@@ -237,6 +268,7 @@ class ServerClientThread implements Runnable {
 		try {
 			outToClient.flush();
 			connectionSocket.close();
+			threadRunning = false;
 		}
 		catch (IOException e) {
 			e.printStackTrace();
