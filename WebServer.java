@@ -24,7 +24,7 @@ class WebServer {
 			showGUI();
 		}
 		else {
-			
+			showConsole();
 		}
 		/*
 		 * Start the web server which will listen on localhost:9999
@@ -54,6 +54,21 @@ class WebServer {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void showConsole() {
+		System.out.println(" ");
+		System.out.println("\u001B[34mCIS 3329 Assignment 7");
+		System.out.println("by Viraj Chitnis");
+		System.out.println(" ");
+		System.out.println("The server is ready...");
+		System.out.println("Listening on localhost (127.0.0.1) port 9999\u001B[0m");
+		System.out.println(" ");
+		System.out.println("\u001B[31mWARNING: This program may not work in Windows, please use Mac OS X or Linux to run it.\u001B[0m");
+		System.out.println(" ");
+		System.out.println(" ");
+		System.out.println("Copyright © 2014 Viraj Chitnis. All Rights Reserved.");
+		System.out.println(" ");
 	}
 	
 	public static void showGUI() {
