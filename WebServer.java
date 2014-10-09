@@ -132,7 +132,7 @@ class ServerClientThread implements Runnable {
 
     public ServerClientThread(Socket connectionSocket) {
         this.connectionSocket = connectionSocket;
-		this.serverName = "CHITNIS/1.0";
+		this.serverName = "CHITNIS/1.0 (persistent)";
 		this.threadStartTime = new Date();
 		this.threadRunning = true;
 		dataTransferInProgress = false;
