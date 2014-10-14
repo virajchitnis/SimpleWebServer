@@ -162,36 +162,36 @@ class ServerClientThread implements Runnable {
 					return;
 				}
 				
-				String clientURIRequest = clientGETRequest.substring(4, (clientGETRequest.length() - 9));
-				if (clientURIRequest.equals("/")) {
-					String clientIP = connectionSocket.getInetAddress().getHostAddress();
-					Date currentDate = new Date();
+				String[] clientRequestObjects = clientGETRequest.split(" ");
+				String[] httpVersionObjects = clientRequestObjects[2].split("/");
+				String[] hostObjects = httpRequestHeaders.get(1).split(" ");
+				
+				String clientIP = connectionSocket.getInetAddress().getHostAddress();
+				Date currentDate = new Date();
 
-					String responseBody = "<html><head><title>Viraj's Web Server</title></head><body>"
-							+ "<p>Your IP address is " + clientIP + "<br>"
-							+ "It is now " + currentDate.toString() + "</p>"
-							+ "<br><p><b>Your request headers:</b><br>";
-					for (int i = 0; i < httpRequestHeaders.size(); i++) {
-						responseBody = responseBody + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + httpRequestHeaders.get(i) + "<br>";
-					}
-					responseBody = responseBody + "</p></body></html>";
-					int responseLength = (int)responseBody.length();
+				String responseBody = "<html><head><title>Viraj's Web Server</title></head><body>"
+						+ "<p>Your IP address is " + clientIP + "<br>"
+						+ "It is now " + currentDate.toString() + "</p>"
+						+ "<p><b>method</b> " + clientRequestObjects[0] + "<br>"
+						+ "<b>URL</b> " + clientRequestObjects[1] + "<br>"
+						+ "<b>HTTP version</b> " + httpVersionObjects[1] + "<br>"
+						+ "<b>host</b> " + hostObjects[1] + "<br>"
+						+ "</p><br><p><b>Your request headers:</b><br>";
+				for (int i = 0; i < httpRequestHeaders.size(); i++) {
+					responseBody = responseBody + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + httpRequestHeaders.get(i) + "<br>";
+				}
+				responseBody = responseBody + "</p></body></html>";
+				int responseLength = (int)responseBody.length();
 
-					String serverResponse = "HTTP/1.1 200 OK\r\n"
-						+ "Date: " + getServerHTTPTime() + "\r\n"
-						+ "Connection: close\r\n"
-						+ "Server: " + serverName + "\r\n"
-						+ "Content-Length: " + responseLength + "\r\n"
-						+ "Content-Type: text/html; charset=UTF-8\r\n\r\n\r\n"
-						+ responseBody + "\n";
-					writeBytesToClient(serverResponse);
-					closeOpenConnections();
-				}
-				else {
-					returnNotFoundRequest();
-					closeOpenConnections();
-					return;
-				}
+				String serverResponse = "HTTP/1.1 200 OK\r\n"
+					+ "Date: " + getServerHTTPTime() + "\r\n"
+					+ "Connection: close\r\n"
+					+ "Server: " + serverName + "\r\n"
+					+ "Content-Length: " + responseLength + "\r\n"
+					+ "Content-Type: text/html; charset=UTF-8\r\n\r\n\r\n"
+					+ responseBody + "\n";
+				writeBytesToClient(serverResponse);
+				closeOpenConnections();
 			}
 			else {
 				returnBadRequest();
