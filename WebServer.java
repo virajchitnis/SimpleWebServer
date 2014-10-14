@@ -175,8 +175,42 @@ class ServerClientThread implements Runnable {
 						+ "<p><b>method</b> " + clientRequestObjects[0] + "<br>"
 						+ "<b>URL</b> " + clientRequestObjects[1] + "<br>"
 						+ "<b>HTTP version</b> " + httpVersionObjects[1] + "<br>"
-						+ "<b>host</b> " + hostObjects[1] + "<br>"
-						+ "</p><br><p><b>Your request headers:</b><br>";
+						+ "<b>host</b> " + hostObjects[1] + "<br>";
+				
+				if (headerFieldExists(httpRequestHeaders, "Connection:")) {
+					responseBody = responseBody + "<b>Connection</b> " + getValueOfHeaderField(httpRequestHeaders, "Connection:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "Accept:")) {
+					responseBody = responseBody + "<b>Accept</b> " + getValueOfHeaderField(httpRequestHeaders, "Accept:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "User-Agent:")) {
+					responseBody = responseBody + "<b>User-Agent</b> " + getValueOfHeaderField(httpRequestHeaders, "User-Agent:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "Accept-Encoding:")) {
+					responseBody = responseBody + "<b>Accept-Encoding</b> " + getValueOfHeaderField(httpRequestHeaders, "Accept-Encoding:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "Accept-Language:")) {
+					responseBody = responseBody + "<b>Accept-Language</b> " + getValueOfHeaderField(httpRequestHeaders, "Accept-Language:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "Accept-Charset:")) {
+					responseBody = responseBody + "<b>Accept-Charset</b> " + getValueOfHeaderField(httpRequestHeaders, "Accept-Charset:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "Cookie:")) {
+					responseBody = responseBody + "<b>Cookie</b> " + getValueOfHeaderField(httpRequestHeaders, "Cookie:") + "<br>";
+				}
+				
+				if (headerFieldExists(httpRequestHeaders, "Cache-Control:")) {
+					responseBody = responseBody + "<b>Cache-Control</b> " + getValueOfHeaderField(httpRequestHeaders, "Cache-Control:") + "<br>";
+				}
+				
+				responseBody = responseBody + "</p><br><p><b>Your request headers:</b><br>";
+				
 				for (int i = 0; i < httpRequestHeaders.size(); i++) {
 					responseBody = responseBody + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + httpRequestHeaders.get(i) + "<br>";
 				}
@@ -203,6 +237,33 @@ class ServerClientThread implements Runnable {
 			e.printStackTrace();
 		}
     }
+	
+	Boolean headerFieldExists(ArrayList<String> headers, String header) {
+		for (int i = 0; i < headers.size(); i++) {
+			String currHeader = headers.get(i);
+			String[] currHeaderObjects = currHeader.split(" ");
+			//System.out.println(currHeaderObjects[0] + "| |" + header + "|");
+			if (currHeaderObjects[0].equals(header)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	String getValueOfHeaderField(ArrayList<String> headers, String header) {
+		for (int i = 0; i < headers.size(); i++) {
+			String currHeader = headers.get(i);
+			String[] currHeaderObjects = currHeader.split(" ");
+			if (currHeaderObjects[0].equals(header)) {
+				String ret = "";
+				for (int j = 1; j < currHeaderObjects.length; j++) {
+					ret = ret + " " + currHeaderObjects[j];
+				}
+				return ret;
+			}
+		}
+		return "";
+	}
 	
 	String getServerHTTPTime() {
 	    Calendar calendar = Calendar.getInstance();
