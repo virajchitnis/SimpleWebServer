@@ -242,7 +242,6 @@ class ServerClientThread implements Runnable {
 		for (int i = 0; i < headers.size(); i++) {
 			String currHeader = headers.get(i);
 			String[] currHeaderObjects = currHeader.split(" ");
-			//System.out.println(currHeaderObjects[0] + "| |" + header + "|");
 			if (currHeaderObjects[0].equals(header)) {
 				return true;
 			}
