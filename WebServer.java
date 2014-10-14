@@ -41,6 +41,10 @@ class WebServer {
 			ServerSocket welcomeSocket = new ServerSocket(9999);
 			
 			while(true) {
+				/*
+				 * Pass a newly created connection to a new thread. See 'ServerClientThread'
+				 * class below to see how the connection is handled and data is returned.
+				 */
 				Socket connectionSocket = welcomeSocket.accept();
 				ServerClientThread newRunnable = new ServerClientThread(connectionSocket);
 				new Thread(newRunnable).start();
