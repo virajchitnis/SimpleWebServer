@@ -1,7 +1,7 @@
 /* 
  * Viraj Chitnis
  * TUid: 912984033
- * CIS 3329 Assignment 7
+ * CIS 3329 Assignment 8
  */
 
 import java.io.*;
@@ -57,7 +57,7 @@ class WebServer {
 	
 	public static void showConsole() {
 		System.out.println(" ");
-		System.out.println("\u001B[34mCIS 3329 Assignment 7");
+		System.out.println("\u001B[34mCIS 3329 Assignment 8");
 		System.out.println("by Viraj Chitnis");
 		System.out.println(" ");
 		System.out.println("The server is ready...");
@@ -86,7 +86,7 @@ class WebServer {
 		rightBlankPanel.setPreferredSize(new Dimension(25, 0));
 		frame.getContentPane().add(rightBlankPanel, BorderLayout.EAST);
 		
-		JLabel textServerStatus = new JLabel("<html>CIS 3329 Assignment 7<br>"
+		JLabel textServerStatus = new JLabel("<html>CIS 3329 Assignment 8<br>"
 			+ "by Viraj Chitnis<br>"
 			+ "&nbsp;<br>"
 			+ "<font color=blue>The server is ready...<br>"
